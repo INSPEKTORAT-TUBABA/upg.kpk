@@ -1,60 +1,43 @@
-<div id="progressApp" style="font-family: Arial, sans-serif; max-width: 600px;">
-  <!-- Bagian 1 -->
-  <div style="background:#004c70;color:white;padding:10px;border-radius:5px;margin:10px 0;">
-    Perangkat Pengendalian Gratifikasi 
-    <span id="progress1" style="float:right;background:#6cc24a;padding:2px 8px;border-radius:20px;">0%</span>
-  </div>
-  <div style="background:#0b6b94;color:white;padding:8px;border-radius:5px;margin-left:20px;">
-    Perangkat Pengendalian Gratifikasi
-  </div>
-  <div style="margin-left:40px;">
-    <label><input type="checkbox" class="task group1"> Aturan Pengendalian Gratifikasi</label><br>
-    <label><input type="checkbox" class="task group1"> Penetapan/SK atau Dokumen Lainnya</label>
-  </div>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarki Pengendalian Gratifikasi</title>
+    <style>
+        .container { margin: 20px; font-family: Arial, sans-serif; }
+        .clickable { cursor: pointer; padding: 10px; background: #f0f0f0; margin-bottom: 5px; }
+        .clickable:hover { background: #e0e0e0; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="clickable" onclick="toggleSection('ppg')">Perangkat Pengendalian Gratifikasi</div>
+        <div id="ppg-content" class="hidden">
+            <div class="clickable" onclick="toggleSection('apg')">Perangkat Pengendalian Gratifikasi</div>
+            <div class="clickable" onclick="toggleSection('apg')">Aturan Pengendalian Gratifikasi</div>
+            <div id="apg-content" class="hidden">
+                <form>
+                    <label for="input1">Isian 1:</label><br>
+                    <input type="text" id="input1" name="input1"><br><br>
+                    <label for="input2">Isian 2:</label><br>
+                    <input type="text" id="input2" name="input2"><br><br>
+                    <button type="submit">Kirim</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-  <!-- Bagian 2 -->
-  <div style="background:#004c70;color:white;padding:10px;border-radius:5px;margin:10px 0;">
-    Implementasi Pemanfaatan Media
-    <span id="progress2" style="float:right;background:#6cc24a;padding:2px 8px;border-radius:20px;">0%</span>
-  </div>
-  <div style="background:#0b6b94;color:white;padding:8px;border-radius:5px;margin-left:20px;">
-    Penyebaran Pesan Melalui Media
-  </div>
-  <div style="margin-left:40px;">
-    <label><input type="checkbox" class="task group2"> Penyebaran Pesan Melalui Media (Sasaran Internal)</label><br>
-    <label><input type="checkbox" class="task group2"> Penyebaran Pesan Melalui Media (Sasaran Eksternal)</label>
-  </div>
-
-  <!-- Bagian 3 -->
-  <div style="background:#004c70;color:white;padding:10px;border-radius:5px;margin:10px 0;">
-    Implementasi Diseminasi Pengendalian Gratifikasi
-    <span id="progress3" style="float:right;background:#6cc24a;padding:2px 8px;border-radius:20px;">0%</span>
-  </div>
-  <div style="background:#0b6b94;color:white;padding:8px;border-radius:5px;margin-left:20px;">
-    E-Learning Pengendalian Gratifikasi
-  </div>
-  <div style="margin-left:40px;">
-    <label><input type="checkbox" class="task group3"> E-learning Peningkatan Pemahaman Gratifikasi</label>
-  </div>
-  <div style="background:#0b6b94;color:white;padding:8px;border-radius:5px;margin-left:20px;margin-top:8px;">
-    Sosialisasi/Diseminasi Pengendalian Gratifikasi
-  </div>
-</div>
-
-<script>
-function updateProgress(group, progressId) {
-  const tasks = document.querySelectorAll('.' + group);
-  let checked = 0;
-  tasks.forEach(t => { if (t.checked) checked++; });
-  let percent = Math.round((checked / tasks.length) * 100);
-  document.getElementById(progressId).textContent = percent + "%";
-}
-
-document.querySelectorAll('.task').forEach(task => {
-  task.addEventListener('change', () => {
-    updateProgress('group1','progress1');
-    updateProgress('group2','progress2');
-    updateProgress('group3','progress3');
-  });
-});
-</script>
+    <script>
+        function toggleSection(sectionId) {
+            var section = document.getElementById(sectionId + '-content');
+            if (section.style.display === "none" || section.style.display === "") {
+                section.style.display = "block";
+            } else {
+                section.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
