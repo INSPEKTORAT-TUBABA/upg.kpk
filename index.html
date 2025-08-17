@@ -1,40 +1,111 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hierarki Pengendalian Gratifikasi</title>
-    <style>
-        .container { margin: 20px; font-family: Arial, sans-serif; }
-        .clickable { cursor: pointer; padding: 10px; background: #f0f0f0; margin-bottom: 5px; }
-        .clickable:hover { background: #e0e0e0; }
-        .hidden { display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Pengendalian Gratifikasi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+    .menu {
+      max-width: 600px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .menu-item {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #ddd;
+      transition: background-color 0.2s;
+    }
+    .menu-item:hover {
+      background-color: #f0f0f0;
+    }
+    .submenu {
+      display: none;
+      padding-left: 20px;
+    }
+    .submenu.show {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="clickable" onclick="toggleSection('ppg')">Perangkat Pengendalian Gratifikasi</div>
-        <div id="ppg-content" class="hidden">
-            
-            <div class="clickable" onclick="toggleSection('apg')">Aturan Pengendalian Gratifikasi</div>
-            <div id="apg-content" class="hidden">
-                <form>
-                   
-                   <button type="submit">Kirim</button>
-                </form>
-            </div>
-        </div>
+  <div class="menu">
+    <div class="menu-item" onclick="toggleSubmenu('perangkat')">Perangkat Pengendalian Gratifikasi</div>
+    <div class="submenu" id="perangkat">
+      <div class="menu-item" onclick="toggleSubmenu('aturan')">Aturan Pengendalian Gratifikasi</div>
+      <div class="menu-item" onclick="toggleSubmenu('penetapan')">Penetapan/BK atau Dokumen Lainnya</div>
     </div>
 
-    <script>
-        function toggleSection(sectionId) {
-            var section = document.getElementById(sectionId + '-content');
-            if (section.style.display === "none" || section.style.display === "") {
-                section.style.display = "block";
-            } else {
-                section.style.display = "none";
-            }
-        }
-    </script>
+    <div class="menu-item" onclick="toggleSubmenu('implementasi-media')">Implementasi Pemanfaatan Media</div>
+    <div class="submenu" id="implementasi-media">
+      <div class="menu-item" onclick="toggleSubmenu('penyebaran-pesan')">Penyebaran Pesan Melalui Media</div>
+      <div class="submenu" id="penyebaran-pesan">
+        <div class="menu-item">Penyebaran Pesan Melalui Media (Sasaran Internal)</div>
+        <div class="menu-item">Penyebaran Pesan Melalui Media (Sasaran Eksternal)</div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('diseminasi')">Implementasi Diseminasi Pengendalian Gratifikasi</div>
+    <div class="submenu" id="diseminasi">
+      <div class="menu-item" onclick="toggleSubmenu('e-learning')">E-Learning Pengendalian Gratifikasi</div>
+      <div class="submenu" id="e-learning">
+        <div class="menu-item">E-learning Peningkatan Pemahaman Gratifikasi</div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('sosialisasi')">Sosialisasi/Diseminasi Pengendalian Gratifikasi</div>
+    <div class="submenu" id="sosialisasi">
+      <div class="menu-item">Sosialisasi ke Pihak Internal (Seluruh Pegawai)</div>
+      <div class="menu-item">Sosialisasi ke Pihak Eksternal</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('kegiatan-utama')">Kegiatan Utama</div>
+    <div class="submenu" id="kegiatan-utama">
+      <div class="menu-item">Pengisian Kegiatan Utama/CoreBusiness Dengan Opsi Sektor Berdasarkan Klasifikasi Risiko Monev</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('pemetaan')">Pemetaan Titik Rawan</div>
+    <div class="submenu" id="pemetaan">
+      <div class="menu-item">Identifikasi Titik Rawan Praktik Gratifikasi</div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('mitigasi')">Mitigasi Risiko</div>
+    <div class="submenu" id="mitigasi">
+      <div class="menu-item" onclick="toggleSubmenu('mitigasi-risiko')">Mitigasi Risiko Titik Rawan Praktik Gratifikasi</div>
+      <div class="submenu" id="mitigasi-risiko">
+        <div class="menu-item">Mitigasi Risiko Titik Rawan Praktik Gratifikasi</div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('hasil-implementasi')">Hasil Implementasi Program Pengendalian Gratifikasi</div>
+    <div class="submenu" id="hasil-implementasi">
+      <div class="menu-item" onclick="toggleSubmenu('pelaporan')">Pelaporan Gratifikasi</div>
+      <div class="submenu" id="pelaporan">
+        <div class="menu-item">Pelaporan Gratifikasi</div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleSubmenu('inovasi')">Inovasi</div>
+    <div class="submenu" id="inovasi">
+      <div class="menu-item" onclick="toggleSubmenu('inovasi-pengendalian')">Inovasi Pengendalian Gratifikasi</div>
+      <div class="submenu" id="inovasi-pengendalian">
+        <div class="menu-item">Inovasi Pengendalian Gratifikasi</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSubmenu(id) {
+      const submenu = document.getElementById(id);
+      submenu.classList.toggle('show');
+    }
+  </script>
 </body>
 </html>
