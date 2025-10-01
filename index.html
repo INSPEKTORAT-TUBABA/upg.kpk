@@ -3,140 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload dan Baca PDF dengan Indikator Progres</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Upload dan Konversi PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.3.0/docx.min.js"></script>
     <style>
-        #progressCircle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 5px solid #ccc;
+        body {
+            font-family: Arial, sans-serif;
             margin: 20px;
+            text-align: center;
         }
-
-        .progress-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
+        #pdfContent {
+            margin-top: 20px;
+            text-align: left;
+            border: 1px solid #ccc;
+            padding: 10px;
         }
-
-        #fileInput {
-            display: block;
-            margin: 10px auto;
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
-    <h2>Unggah File PDF</h2>
-    <input type="file" id="fileInput" accept=".pdf" />
-    
-    <!-- Indikator Progres -->
-    <div class="progress-container">
-        <canvas id="progressCircle" width="150" height="150"></canvas>
-    </div>
-    <br><br>
-
-    <h3>Isi PDF</h3>
-    <div id="pdfContent" style="border: 1px solid #ddd; padding: 10px; max-height: 300px; overflow-y: scroll;"></div>
-
-    <br>
-    <button onclick="downloadExcel()">Download sebagai Excel</button>
-    <button onclick="downloadWord()">Download sebagai Word</button>
+    <h1>Upload dan Konversi PDF</h1>
+    <input type="file" id="pdfUpload" accept=".pdf">
+    <div id="pdfContent"></div>
+    <button id="exportExcel" disabled>Ekspor ke Excel</button>
+    <button id="exportWord" disabled>Ekspor ke Word</button>
 
     <script>
-        let pdfData = []; // Menyimpan isi PDF dalam format tabel
-        let progressCircle = document.getElementById('progressCircle');
-        let ctx = progressCircle.getContext('2d');
-        let progress = 0;
+        // Inisialisasi pdf.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
 
-        // Fungsi untuk menggambar progress melingkar
-        function drawProgressCircle(percent) {
-            const radius = 60;
-            const circumference = 2 * Math.PI * radius;
-            const offset = circumference - (percent / 100) * circumference;
+        let extractedData = []; // Menyimpan data yang diekstrak (teks dan tabel)
 
-            ctx.clearRect(0, 0, progressCircle.width, progressCircle.height); // Clear canvas
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = '#4caf50'; // Color of progress
-            ctx.fillStyle = '#f3f3f3'; // Background color
+        // Fungsi untuk memproses file PDF yang diunggah
+        document.getElementById('pdfUpload').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            ctx.beginPath();
-            ctx.arc(75, 75, radius, -Math.PI / 2, 2 * Math.PI);
-            ctx.stroke(); // Draw the background circle
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedArray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                let textContent = '';
+                extractedData = [];
 
-            ctx.strokeStyle = '#2196F3'; // Progress color
-            ctx.beginPath();
-            ctx.arc(75, 75, radius, -Math.PI / 2, (2 * Math.PI * percent) / 100 - Math.PI / 2);
-            ctx.stroke(); // Draw the progress circle
+                // Ekstrak teks dan tabel dari setiap halaman
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    let pageText = '';
+                    let tableData = [];
+                    let currentRow = [];
 
-            ctx.fillStyle = '#2196F3';
-            ctx.font = '20px Arial';
-            ctx.fillText(Math.round(percent) + '%', 60, 85); // Display percentage in the center
-        }
-
-        // Fungsi untuk membaca dan menampilkan PDF
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    const arrayBuffer = event.target.result;
-                    const loadingTask = pdfjsLib.getDocument(arrayBuffer);
-                    loadingTask.promise.then(pdf => {
-                        const numPages = pdf.numPages;
-                        let pagePromises = [];
-                        for (let i = 1; i <= numPages; i++) {
-                            pagePromises.push(pdf.getPage(i).then(page => {
-                                return page.getTextContent().then(textContent => {
-                                    const pageText = textContent.items.map(item => item.str).join(' ');
-                                    pdfData.push(pageText); // Menyimpan hasil halaman dalam array
-                                    displayPDFContent(pageText);
-                                    progress = (i / numPages) * 100; // Update progress
-                                    drawProgressCircle(progress); // Update the progress circle
-                                });
-                            }));
+                    // Proses item teks untuk mendeteksi tabel
+                    content.items.forEach(item => {
+                        if (item.str.trim()) {
+                            pageText += item.str + ' ';
+                            // Logika sederhana untuk mendeteksi tabel berdasarkan spasi dan posisi
+                            if (item.str.includes('|') || item.str.includes('  ')) {
+                                currentRow.push(item.str.trim());
+                            } else {
+                                if (currentRow.length > 0) {
+                                    tableData.push(currentRow);
+                                    currentRow = [];
+                                }
+                            }
                         }
-
-                        // Tunggu hingga semua halaman selesai diproses
-                        Promise.all(pagePromises).then(() => {
-                            console.log('PDF telah diproses');
-                        });
                     });
-                };
-                reader.readAsArrayBuffer(file);
-            } else {
-                alert('Silakan pilih file PDF.');
-            }
+                    if (currentRow.length > 0) {
+                        tableData.push(currentRow);
+                    }
+
+                    extractedData.push({ page: i, text: pageText, table: tableData });
+                }
+
+                // Tampilkan konten di halaman
+                let displayHtml = '';
+                extractedData.forEach(data => {
+                    displayHtml += `<h3>Halaman ${data.page}</h3><p>${data.text}</p>`;
+                    if (data.table.length > 0) {
+                        displayHtml += '<table>';
+                        data.table.forEach(row => {
+                            displayHtml += '<tr>';
+                            row.forEach(cell => {
+                                displayHtml += `<td>${cell}</td>`;
+                            });
+                            displayHtml += '</tr>';
+                        });
+                        displayHtml += '</table>';
+                    }
+                });
+                document.getElementById('pdfContent').innerHTML = displayHtml;
+
+                // Aktifkan tombol ekspor
+                document.getElementById('exportExcel').disabled = false;
+                document.getElementById('exportWord').disabled = false;
+            };
+            fileReader.readAsArrayBuffer(file);
         });
 
-        // Fungsi untuk menampilkan isi PDF pada halaman
-        function displayPDFContent(text) {
-            const div = document.getElementById('pdfContent');
-            div.innerHTML += `<p>${text}</p>`;
-        }
-
-        // Fungsi untuk mengunduh sebagai file Excel
-        function downloadExcel() {
-            // Membuat array 2D untuk data yang akan dimasukkan ke Excel
-            const data = pdfData.map(page => [page]); // Membuat setiap halaman menjadi satu baris
-            const ws = XLSX.utils.aoa_to_sheet(data);
+        // Ekspor ke Excel
+        document.getElementById('exportExcel').addEventListener('click', function() {
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'PDF Content');
-            XLSX.writeFile(wb, 'hasil_pdf.xlsx'); // Mengunduh file Excel
-        }
-
-        // Fungsi untuk mengunduh sebagai file Word
-        function downloadWord() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            pdfData.forEach((pageText, index) => {
-                doc.text(pageText, 10, 10 + (index * 10)); // Menambahkan teks setiap halaman ke file
+            extractedData.forEach(data => {
+                if (data.table.length > 0) {
+                    const ws = XLSX.utils.aoa_to_sheet(data.table);
+                    XLSX.utils.book_append_sheet(wb, ws, `Halaman ${data.page}`);
+                } else {
+                    const ws = XLSX.utils.aoa_to_sheet([[data.text]]);
+                    XLSX.utils.book_append_sheet(wb, ws, `Halaman ${data.page}`);
+                }
             });
-            doc.save('hasil_pdf.pdf'); // Mengunduh file PDF, karena jsPDF tidak mendukung .docx langsung
-        }
+            XLSX.writeFile(wb, 'output.xlsx');
+        });
+
+        // Ekspor ke Word
+        document.getElementById('exportWord').addEventListener('click', function() {
+            const doc = new docx.Document({
+                sections: extractedData.map(data => ({
+                    properties: {},
+                    children: [
+                        new docx.Paragraph({
+                            text: `Halaman ${data.page}`,
+                            heading: docx.HeadingLevel.HEADING_1
+                        }),
+                        new docx.Paragraph({
+                            text: data.text
+                        }),
+                        ...(data.table.length > 0 ? [
+                            new docx.Table({
+                                rows: data.table.map(row => new docx.TableRow({
+                                    children: row.map(cell => new docx.TableCell({
+                                        children: [new docx.Paragraph(cell)]
+                                    }))
+                                }))
+                            })
+                        ] : [])
+                    ]
+                }))
+            });
+            docx.Packer.toBlob(doc).then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'output.docx';
+                link.click();
+            });
+        });
     </script>
 </body>
 </html>
